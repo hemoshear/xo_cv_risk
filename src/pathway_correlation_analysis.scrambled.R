@@ -16,10 +16,23 @@ hrdb_deg_ec <- c(hrdb_deg_ec1,
 hrdb_deg_smc1 <- readRDS("data/hrdb_deg_smc_1.RDS")
 hrdb_deg_smc2 <- readRDS("data/hrdb_deg_smc_2.RDS")
 hrdb_deg_smc <- c(hrdb_deg_smc1,
-                 hrdb_deg_smc2)
+                  hrdb_deg_smc2)
 
 test_compounds_deg_ec <- readRDS("data/test_compounds_deg_ec.RDS")
 test_compounds_deg_smc <- readRDS("data/test_compounds_deg_smc.RDS")
+
+# scramble the data!
+set.seed(42)
+
+test_compounds_deg_ec <- lapply(test_compounds_deg_ec, function(x) {
+  x$entrez_id <- sample(x$entrez_id)
+  return(x)
+})
+
+test_compounds_deg_smc <- lapply(test_compounds_deg_smc, function(x) {
+  x$entrez_id <- sample(x$entrez_id)
+  return(x)
+})
 
 reactome_list <- readRDS("data/reactome_list.RDS")
 
@@ -212,7 +225,7 @@ correlation_gst <- function(correlations_df,
   
   # output results
   data.frame(treatment_count=length(all_treatments),
-             cv_treatment_count=sum(all_treatments %in% treatment_list), 
+             cv_treatment_count=sum(all_treatments %in% treatment_list),
              pos_cv_treatment_count=length(pos_cv_treatments),
              GST.p_value=pval,
              Wilcox.p_value=wilcox_pval,
@@ -305,7 +318,7 @@ test_correlation_results_smc <- lapply(as.list(names(test2hrdb_correlations_smc_
 names(test_correlation_results_smc) <- names(test2hrdb_correlations_smc_p)
 
 # output
-saveRDS(test_correlation_results_ec, file=paste0(out_dir, "test_gst_correlations_ec.RDS"))
-saveRDS(test_correlation_results_smc, file=paste0(out_dir, "test_gst_correlations_smc.RDS"))
+saveRDS(test_correlation_results_ec, file=paste0(out_dir, "test_gst_correlations_ec.scrambled.RDS"))
+saveRDS(test_correlation_results_smc, file=paste0(out_dir, "test_gst_correlations_smc.scrambled.RDS"))
 
 
