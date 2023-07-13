@@ -9,14 +9,19 @@ library(tidyverse)
 library(magrittr)
 library(openxlsx)
 
+# create results directory
 out_dir <- "results/"
 
 dir.create(out_dir, showWarnings = F)
 
-# pca plot with both cells
 
-meta <- readRDS("data/fbx_oxp_count_metadata.RDS")
-counts <- readRDS("data/fbx_oxp_gene_counts.RDS")
+# Read in data ------------------------------------------------
+
+meta <- readRDS("data/fbx_oxp_count_metadata.RDS") # metadata
+counts <- readRDS("data/fbx_oxp_gene_counts.RDS") # gene count data
+
+
+# PCA Plot -------------------------------------------------
 
 counts_dge <- DGEList(counts, group = meta$treatment)
 
@@ -50,14 +55,15 @@ ggplot(counts_pca_x, aes(x=PC1,
   labs(x="Principal Component 1 (PC1)", 
        y="Principal Component 2 (PC2)",  title=NULL, color=NULL, shape=NULL)
 
-
 ggsave(paste0(out_dir, "fbx_obx.both_cells.pca.png"),
        width=6, height=5)
 
-# heatmaps
+# Heatmaps defined by PC loadings -----------------------------------
 
+# separate by cell type
 for (cell in unique(meta$cell_type)) {
   
+  # PCA analysis
   subset_meta <- meta[meta$cell_type == cell,]
   subset_counts <- counts[,rownames(subset_meta)]
   
@@ -75,6 +81,7 @@ for (cell in unique(meta$cell_type)) {
   # pc loadings analysis
   counts_rot <- as.data.frame(counts_pca$rotation)
   
+  # top genes for PC1
   top_PC1 <- counts_rot[order(abs(counts_rot$PC1), decreasing=T),]$PC1[1:250]
   names(top_PC1) <- rownames(counts_rot[order(abs(counts_rot$PC1), decreasing=T),])[1:250]
   
@@ -86,6 +93,7 @@ for (cell in unique(meta$cell_type)) {
   plot_colors <- c("green4","purple","black")
   names(plot_colors) <- levels(subset_meta$treatment)
   
+  # annotate treatments in columns
   ca <- columnAnnotation(TREATMENT=subset_meta$treatment,
                          col=list("TREATMENT"=plot_colors))
   

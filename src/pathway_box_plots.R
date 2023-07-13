@@ -4,9 +4,12 @@ library(ggbeeswarm)
 library(stringr)
 library(snakecase)
 
+# create results directory
 out_dir <- "results/"
 
 dir.create(out_dir, showWarnings = F)
+
+# Read in data -------------------------------------------------------------
 
 meta <- readRDS("data/fbx_oxp_count_metadata.RDS")
 meta$treatment <- factor(as.character(meta$treatment),
@@ -14,9 +17,11 @@ meta$treatment <- factor(as.character(meta$treatment),
                                   "500uM OXP",
                                   "100uM FBX"))
 
+# Pathway expression values, created through GSVA
 pathway_counts_ec <- readRDS("data/fbx_oxp_reactome_pathway_counts.ec.RDS")
 pathway_counts_smc <- readRDS("data/fbx_oxp_reactome_pathway_counts.smc.RDS")
 
+# Differentially Expressed Pathways
 pathway_dep_ec <- readRDS("data/fbx_oxp_reactome_pathway_dep.ec.RDS")
 pathway_dep_smc <- readRDS("data/fbx_oxp_reactome_pathway_dep.smc.RDS")
 
@@ -36,7 +41,7 @@ pathway_dep_smc <- do.call("rbind", lapply(names(pathway_dep_smc), function(cont
   return(data)
 }))
 
-# list of pathways
+# list of pathways to plot
 pathway_list_ec <- c("eNOS activation",
                      "ROS, RNS production in phagocytes",
                      "TNFs bind their physiological receptors")
@@ -46,19 +51,23 @@ pathway_list_smc <- c("RHO GTPases activate PKNs",
                       "Synthesis of Leukotrienes (LT) and Eoxins (EX)")
 
 
+# Function to create box plot of pathway expression -----------------------------
 pathway_box_plot <- function(pathway,
                              dep,
                              counts,
                              metadata) {
   
   
+  # format counts
   counts_long <- melt(counts)  
   colnames(counts_long) <- c("pathway", "sample_id", "value")
   
   counts_long <- counts_long[counts_long$pathway == pathway,]
     
+  # merge in metadata
   counts_long <- merge(counts_long, metadata, by="sample_id")
   
+  # merge in differential expression results
   dep <- dep[dep$pathway == pathway,]
   dep$treatment <- sapply(dep$contrast, function(x) {unlist(strsplit(x, "-"))[1]})
   dep$treatment <- factor(dep$treatment, levels=levels(metadata$treatment))
@@ -76,6 +85,7 @@ pathway_box_plot <- function(pathway,
   counts_long$plot_value <- factor(counts_long$plot_value,
                                      levels = unique(counts_long$plot_value))
   
+  # plot
   ggplot(counts_long, aes(x=plot_value,
                             y=value,
                             color=treatment)) +
@@ -91,6 +101,8 @@ pathway_box_plot <- function(pathway,
     labs(x=NULL, color=NULL, title=str_wrap(pathway, width = 30), y="GSVA Score")
   
 }
+
+# Call pathway plots for each cell ----------------------------------------
 
 for (pathway in pathway_list_ec) {
   

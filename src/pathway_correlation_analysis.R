@@ -8,6 +8,8 @@ out_dir <- "results/"
 dir.create(out_dir, showWarnings = F)
 
 # Read in data ------------------------------------------------
+
+# HRDB
 hrdb_deg_ec1 <- readRDS("data/hrdb_deg_ec_1.RDS")
 hrdb_deg_ec2 <- readRDS("data/hrdb_deg_ec_2.RDS")
 hrdb_deg_ec <- c(hrdb_deg_ec1,
@@ -18,11 +20,14 @@ hrdb_deg_smc2 <- readRDS("data/hrdb_deg_smc_2.RDS")
 hrdb_deg_smc <- c(hrdb_deg_smc1,
                  hrdb_deg_smc2)
 
+# The test compounds
 test_compounds_deg_ec <- readRDS("data/test_compounds_deg_ec.RDS")
 test_compounds_deg_smc <- readRDS("data/test_compounds_deg_smc.RDS")
 
+# curated reactome list
 reactome_list <- readRDS("data/reactome_list.RDS")
 
+# list of CV compounds
 cv_risk_list <- readRDS("data/cv_risk_list.RDS")
 
 # Pathway correlation function -----------------------------------------------------
@@ -304,7 +309,7 @@ test_correlation_results_smc <- lapply(as.list(names(test2hrdb_correlations_smc_
 })
 names(test_correlation_results_smc) <- names(test2hrdb_correlations_smc_p)
 
-# output
+# output results
 saveRDS(test_correlation_results_ec, file=paste0(out_dir, "test_gst_correlations_ec.RDS"))
 saveRDS(test_correlation_results_smc, file=paste0(out_dir, "test_gst_correlations_smc.RDS"))
 
